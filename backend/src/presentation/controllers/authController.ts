@@ -38,8 +38,11 @@ export class AuthController {
 
   async sendOtp(req: Request, res: Response) {
     try {
-      const { userId, type } = req.body;
-      await this.sendOtpUseCase.execute(userId, type);
+      const { type } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      await this.sendOtpUseCase.execute(req.user.id, type);
       res.status(200).json({ message: 'OTP sent successfully' });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -48,8 +51,11 @@ export class AuthController {
 
   async verifyOtp(req: Request, res: Response) {
     try {
-      const { userId, otp, type } = req.body;
-      await this.verifyOtpUseCase.execute(userId, otp, type);
+      const { otp, type } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      await this.verifyOtpUseCase.execute(req.user.id, otp, type);
       res.status(200).json({ message: 'OTP verified successfully' });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -68,8 +74,11 @@ export class AuthController {
 
   async resetPassword(req: Request, res: Response) {
     try {
-      const { userId, otp, newPassword } = req.body;
-      await this.resetPasswordUseCase.execute(userId, otp, newPassword);
+      const { otp, newPassword } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      await this.resetPasswordUseCase.execute(req.user.id, otp, newPassword);
       res.status(200).json({ message: 'Password reset successfully' });
     } catch (error: any) {
       res.status(400).json({ message: error.message });

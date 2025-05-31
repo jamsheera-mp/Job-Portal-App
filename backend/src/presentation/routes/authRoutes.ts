@@ -11,6 +11,7 @@ import { UserRepositoryImpl } from '../../infrastructure/repositories/userReposi
 import { OtpRepositoryImpl } from '../../infrastructure/repositories/otpRepositoryImpl';
 import { EmailServiceImpl } from '../../infrastructure/services/emailServiceImpl';
 import { AuthServiceImpl } from '../../infrastructure/services/authServiceImpl';
+import { authMiddleware } from '../../infrastructure/middleware/authMiddleware';
 
 const router = Router();
 
@@ -33,15 +34,12 @@ const authController = new AuthController(
   loginUseCase
 );
 
-// Standard routes
+// Public routes
 router.post('/register', (req, res) => authController.register(req, res));
 router.post('/login', (req, res) => authController.login(req, res));
-router.post('/send-otp', (req, res) => authController.sendOtp(req, res));
-router.post('/verify-otp', (req, res) => authController.verifyOtp(req, res));
 router.post('/forgot-password', (req, res) => authController.forgotPassword(req, res));
-router.post('/reset-password', (req, res) => authController.resetPassword(req, res));
 
-// Social login routes
+// Social login routes (public)
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get(
   '/callback/google',
@@ -63,5 +61,10 @@ router.get(
     res.status(200).json({ user, token });
   }
 );
+
+// Protected routes
+router.post('/send-otp', authMiddleware, (req, res) => authController.sendOtp(req, res));
+router.post('/verify-otp', authMiddleware, (req, res) => authController.verifyOtp(req, res));
+router.post('/reset-password', authMiddleware, (req, res) => authController.resetPassword(req, res));
 
 export default router;
